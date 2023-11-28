@@ -1,0 +1,209 @@
+\documentclass{article}
+%\usepackage{affilauthor}
+\usepackage{listings,xcolor}
+\usepackage{graphicx}
+\usepackage[colorlinks]{hyperref}
+\usepackage{makeidx}
+
+\makeindex
+
+
+\lstdefinestyle{mystyle}
+{
+  language=[LaTeX]{TeX},
+  texcsstyle=*\color{blue},
+  basicstyle=\ttfamily,
+  moretexcs={affil,affilstyle},
+  columns=fullflexible
+}
+
+\title{affilauthor\thanks{Package to customize author and affiliations tagging for \TeX\ inputs.}}
+
+\author{Selvam P.\thanks{Suggestions and feedbacks are welcome, please reach me at selvamittex@gmail.com}}
+
+\date{}                     %% if you don't need date to appear
+
+\begin{document}
+  \maketitle
+
+\section*{Introduction}
+
+{\tt affilauthor} package provides key-value style fields to tag the author and affiliation informations in a structured format. Each field has a specific name within \textbackslash author\ and \textbackslash affil\ commands similar to bib format. We can customize the styles as per preferences for {\tt article.cls} class layouts.
+
+Instead of giving all information(author and affiliation) in single tag {\textbackslash author\{...\}}, we can split the information in a format of key-value style. It will given control over the elements and later we can do changes/styles by given values. It is very simple package, lot more could be added in further improvements.
+
+\section*{Author name tagging}
+
+Available filed names are listed below and it could be placed any order. Fields are optional, e.g.: If we don't have own/org site then we ignore such fields. Contact informations (mail,phone,url) and note field values will treated as footnote with footer mark.\index{\textbackslash author}
+
+\begin{lstlisting}[style=mystyle]
+\author
+  {
+    name={...},
+    mail={...},
+    phone={...},
+    url={...},    
+    affil={...},
+    note={...}    
+  }
+\end{lstlisting}
+
+More than one value for a field can be added with separation operators. 
+\index{mail}
+\begin{lstlisting}[style=mystyle]
+  mail={mail1@gmail.com,mail2@gmail.com}
+\end{lstlisting}
+
+Required to mention the affiliation ids for determine the affiliations those belongs to author. More than one affiliation can be added by comma separation. ID name could be any format like \textbackslash label. Based on the ID, the affiliation number will be displayed after name and also contacts/notes marker.\index{affil}
+
+\begin{lstlisting}[style=mystyle]
+  affil={af1,af2,af5}
+\end{lstlisting}
+
+\subsection*{Sample output}
+
+\subsubsection*{Affiliation ID as numeric:}\index{sample output 1}
+
+\noindent\centerline{\includegraphics[width=.8\textwidth]{affilauthor-image1.pdf}}
+
+\subsubsection*{Affiliation ID as alphabet:}\index{sample output 2}
+
+\noindent\centerline{\includegraphics[width=.8\textwidth]{affilauthor-image2.pdf}}
+
+\subsubsection*{Author's note as footnote:}\index{sample output 3}
+
+\noindent\centerline{\includegraphics[width=.8\textwidth]{affilauthor-image3.pdf}}
+
+Here, we get appropriate marker to the notes in sequence order and also we can change the format like alphabet or roman. 
+
+\section*{Affiliation tagging}
+
+Affiliation related fields are listed below and it could be placed any order. {\tt id} should be a unique label(mandatory field) which is used in author field to get appropriate affiliation number. Other remaining fields are related to respective type of contents, it can be ignored optionally except {\tt id}.\index{\textbackslash affil}
+
+\begin{lstlisting}[style=mystyle]
+\affil
+  {
+    id = {...},    
+    div = {...},    
+    org = {...},    
+    addr = {...},    
+    street = {...},    
+    landmark = {...},    
+    pincode = {...},    
+    postbox = {...},    
+    city = {...},    
+    state = {...},    
+    country = {...}    
+  }
+\end{lstlisting}
+
+\section*{Formatting style}
+
+It provide options to customize the font shape and size. Available types are listed below. We can directly use any Primitive \TeX\ commands to change the style in value part.\index{\textbackslash affilstyle}
+
+\begin{lstlisting}[style=mystyle]
+\affilstyle
+  {
+    authfont = {...},
+    affilfont = {...},
+    mailfont = {...},
+    urlfont = {...},
+    phonefont = {...},
+    notefont = {...},       
+    notenum = { alpha, fnsym, roman },
+    authspace = {...},    
+    affilspace = {...}
+  }
+\end{lstlisting}
+
+Suppose, if I want to change mail font size and shape then below option is preferred. Same way we can do other properties as well.\index{mailfont} 
+
+\begin{lstlisting}[style=mystyle]
+  \affilstyle{mailfont = {\itshape\small}}
+\end{lstlisting}
+
+To change the note marker either alphabet or roman number below option can be used.
+Here, it is choice options so should be choose of those three values:\index{notenum}
+
+\medskip
+
+{\tt alpha} Alphabet number
+
+{\tt fnsym} Default \TeX\ note sequence
+
+{\tt roman} Roman number
+
+\begin{lstlisting}[style=mystyle]
+  \affilstyle{notenum = {alpha}}
+\end{lstlisting}
+
+\medskip
+
+Adjust the vertical space before author and affiliation.\index{authspace}
+
+\begin{lstlisting}[style=mystyle]
+\affilstyle{authspace = {\baselineskip},    
+                affilspace = {\baselineskip}}
+\end{lstlisting}
+
+\bigskip
+
+Add note it, I have defined these for article class which doesn't have such options. So later updates we can add more features and styles.
+
+\section*{Sample Code}
+
+\begin{lstlisting}[style=mystyle]
+\affilstyle[authfont={\sf},
+    mailfont={\tt},
+    affilfont={\it},    
+    notenum={fnsym}
+  ]
+  
+\author{name={Author1 Name},
+      mail={author1@gmail.com},
+      phone={+111-222-333},
+      url={author1.com},    
+      affil={af1,af2},
+      note={Thanks to LaTeX Community}    
+    }  
+\author{name={Author2 Name},
+      mail={author2@gmail.com},
+      phone={+111-222-333},
+      url={author2.com},    
+      affil={af2}
+    }  
+\author{name={Author3 Name},
+      mail={author3@gmail.com},
+      url={author3.com},    
+      affil={af2},
+    }
+  
+\affil{id={af2},
+      div={Department of Computer Science},
+      org={University of London},    
+      street={1st block},
+      city={London},
+      country={UK}    
+  }
+\affil{id={af1},
+      div={Department of Computer Science},
+      org={Delhi University},    
+      city={Delhi},
+      country={India}   
+  }
+   
+\end{lstlisting}
+
+
+\section*{To do lists}
+
+\begin{itemize}
+  \item Adding customize colour options to differentiation
+  \item More layout styles
+  \item Convert to various formats
+  \item etc....
+\end{itemize}
+
+\printindex
+
+\end{document}

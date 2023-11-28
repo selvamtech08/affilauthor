@@ -47,6 +47,8 @@
 \int_new:N \l__affauth_author_cnt_int
 \int_new:N \l__affauth_affil_cnt_int
 \int_new:N \l__affauth_author_note_int
+\prop_new:N \l__affauth_author_note_prop
+\prop_new:N \l__affauth_author_contact_prop
 
 \skip_new:N \__affauth_before_affil_skip
 \skip_new:N \__affauth_before_auth_skip
@@ -87,6 +89,16 @@
     urlfont .tl_set:N     = \l__affauth_font_url_tl,  
     phonefont .tl_set:N   = \l__affauth_font_phone_tl,  
     notefont .tl_set:N    = \l__affauth_font_note_tl,        
+    affilnum .choices:nn   = { alpha, Alpha, roman, Roman }
+    {
+      \int_case:nn {\l_keys_choice_int}
+        {
+          {1}{\let\l__affauth_aff:n\@alph}
+          {2}{\let\l__affauth_aff:n\@Alph}          
+          {3}{\let\l__affauth_aff:n\@roman}                    
+          {4}{\let\l__affauth_aff:n\@Roman}                              
+        }
+    },    
     notenum .choices:nn   = { alpha, fnsym, roman }
     {
       \int_case:nn {\l_keys_choice_int}
@@ -121,45 +133,51 @@
           \int_compare:nNnTF {##1} < {##2}
             {\sort_return_same:}{\sort_return_swapped:}
         }
-      \textsuperscript{\seq_use:Nn \l__affauth_tmpb_seq {,}}
+        \seq_clear:N \l__affauth_tmpa_seq
+        \seq_map_inline:Nn \l__affauth_tmpb_seq
+          {
+              \seq_put_right:Ne \l__affauth_tmpa_seq {\l__affauth_aff:n{##1}}
+          }
+        \__affauth_sups:n{\seq_use:Nn \l__affauth_tmpa_seq {,}}
     \group_end:
   }
 
 \cs_set:Nn \__affauth_auth_sep:n {}
+\cs_set:Nn \l__affauth_aff:n {#1}
+\cs_set_protected:Nn \__affauth_sups:n {\textsuperscript{#1}}
 
 \cs_set_protected:Nn \__affauth_aff_number:n 
   {
     \int_compare:nNnT {#1} > {1} {\par}
-    \textsuperscript{#1}\thinspace
+    \__affauth_sups:n{\l__affauth_aff:n{#1}}\thinspace
   }
+
 
 \cs_set_protected:Nn \l__affauth_note:n {\ifcase#1\or *\or
   **\or***\or****\or\#\or\#\#\or\#\#\#\or\#\#\#\#\or\$\or\$\$\or\$\$\$\or\$\$\$\$
   \or\dag\or\dag\dag\or\dag\dag\dag\or\dag\dag\dag\dag\or\ddag\or\ddag\ddag\or\ddag\ddag\ddag\or\ddag\ddag\ddag\ddag\fi}
 
-\cs_set_protected:Nn \__affauth_auth_mail:nnnn
+\cs_set_protected:Nn \__affauth_auth_mail:nnnnn
   {
     \group_begin:
       \seq_clear:N \l__affauth_tmpa_seq
+      \seq_clear:N \l__affauth_tmpb_seq
+      \seq_set_split:Nee \l__affauth_tmpb_seq {,} {#5}      
       \tl_if_empty:nF {#1} {\seq_put_right:Nn \l__affauth_tmpa_seq {{\l__affauth_font_mail_tl\Letter\thinspace\exp_not:n{#1}}}}
       \tl_if_empty:nF {#2} {\seq_put_right:Nn \l__affauth_tmpa_seq {{\l__affauth_font_phone_tl\Telefon\thinspace\exp_not:n{#2}}}}
       \tl_if_empty:nF {#3} {\seq_put_right:Nn \l__affauth_tmpa_seq {{\l__affauth_font_url_tl\Mundus\thinspace\exp_not:n{#3}}}}    
       \seq_if_empty:NF \l__affauth_tmpa_seq      
         {
           \group_begin:
-            \int_gincr:N \l__affauth_author_note_int
-            \textsuperscript{,\l__affauth_note:n{\l__affauth_author_note_int}}
-            \cs_set:Npn \thefootnote {}
-            \footnotetext[0]{\leftskip-\parindent\l__affauth_note:n{\l__affauth_author_note_int}\thinspace\seq_use:Nn \l__affauth_tmpa_seq {,\space}}
+            \prop_gput:Nee \l__affauth_author_contact_prop {\seq_item:Nn \l__affauth_tmpb_seq {1}} {\seq_use:Nn \l__affauth_tmpa_seq {,\space}}
           \group_end:
         }
       \tl_if_empty:nF {#4} 
       {
         \group_begin:
           \int_gincr:N \l__affauth_author_note_int
-          \textsuperscript{,\l__affauth_note:n{\l__affauth_author_note_int}}
-          \cs_set:Npn \thefootnote {}
-          \footnotetext[0]{\leftskip-\parindent{\l__affauth_font_note_tl\l__affauth_note:n{\l__affauth_author_note_int}\thinspace\exp_not:n{#4}}}
+          \__affauth_sups:n{,\l__affauth_note:n{\l__affauth_author_note_int}}
+          \prop_gput:Nee \l__affauth_author_note_prop {\seq_item:Nn \l__affauth_tmpb_seq {1}} {\l__affauth_note:n{\int_use:N \l__affauth_author_note_int}\exp_not:n{#4}}          
         \group_end:
       }                 
     \group_end:
@@ -174,7 +192,7 @@
         {
           \l__affauth_name_tl
           \exp_args:NV \__affauth_aff_id:n \l__affauth_auth_affil_id_tl
-          \__affauth_auth_mail:nnnn {\l__affauth_auth_mail_tl} {\l__affauth_auth_phone_tl} {\l__affauth_auth_url_tl} {\l__affauth_auth_note_tl}                                
+          \__affauth_auth_mail:nnnnn {\l__affauth_auth_mail_tl} {\l__affauth_auth_phone_tl} {\l__affauth_auth_url_tl} {\l__affauth_auth_note_tl}{\l__affauth_auth_affil_id_tl}                                
           \exp_args:NV \__affauth_auth_sep:n \l__affauth_author_cnt_int                
         }   
     \group_end:
@@ -186,6 +204,7 @@
       \int_gincr:N \l__affauth_affil_cnt_int
       \keys_set:nn { affil-info } { #1 } 
       \prop_gput:NVV \l__affauth_author_id_prop \l__affauth_aff_id_tl \l__affauth_affil_cnt_int
+      \prop_gput:NVV \l__affauth_author_id_prop \l__affauth_affil_cnt_int \l__affauth_aff_id_tl      
       \seq_gput_right:Ne \l__affauth_affil_info_seq 
         {
           \exp_args:NV \__affauth_aff_number:n \l__affauth_affil_cnt_int
@@ -209,15 +228,46 @@
     {\end{center}}
     \org@maketitle}
   }
-  
+
+\cs_set_protected:Npn \__show_affiliation: 
+  {
+    \group_begin:
+    \int_zero:N \l__affauth_affil_cnt_int
+      \l__affauth_font_affil_tl
+      \seq_map_inline:Nn \l__affauth_affil_info_seq 
+        {
+          \int_incr:N \l__affauth_affil_cnt_int
+          ##1\par
+          \prop_get:NVN \l__affauth_author_id_prop \l__affauth_affil_cnt_int \l__affauth_tmpa_tl          
+          \prop_if_in:NVT \l__affauth_author_contact_prop \l__affauth_tmpa_tl
+            {
+              (\prop_item:NV \l__affauth_author_contact_prop \l__affauth_tmpa_tl)
+            }
+            \prop_if_in:NVT \l__affauth_author_note_prop \l__affauth_tmpa_tl
+            {
+              \footnotetext[0]{\kern-\parindent\prop_item:NV \l__affauth_author_note_prop \l__affauth_tmpa_tl}
+            }            
+        }
+    \group_end:
+  }
+
+\cs_set_protected:Nn \__show_authors: 
+  {
+    \group_begin:
+    \l__affauth_font_author_tl
+    \seq_use:Nnnn \l__affauth_author_info_seq {\space and\space}{,\space}{,\space and\space}
+    \group_end:
+  }
+
+
 \AtBeginDocument{
   \gdef\@author
     {
       \group_begin:
         \vskip\__affauth_before_auth_skip
-        {\l__affauth_font_author_tl\seq_use:Nnnn \l__affauth_author_info_seq {\space and\space}{,\space}{,\space and\space}}
-        \par\vskip\__affauth_before_affil_skip
-        {\l__affauth_font_affil_tl\seq_use:Nn \l__affauth_affil_info_seq {\par}}
+        \__show_authors:\par
+        \vskip\__affauth_before_affil_skip
+        \__show_affiliation: 
       \group_end:
     }
   }
